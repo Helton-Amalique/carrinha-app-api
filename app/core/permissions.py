@@ -5,9 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 def is_admin(user):
     """Helper para verificar se o usuário é admin/superuser"""
     return (
-        user.is_staff
-        or user.is_superuser
-        or (user.role and user.role.nome.upper() == "ADMIN")
+        user.is_staff or user.is_superuser or (user.role and user.role.nome.upper() == "ADMIN")
     )
 
 

@@ -1,13 +1,9 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.db.models import Q
 from decimal import Decimal
 from datetime import date
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
 from django.core.validators import MinValueValidator, EmailValidator, RegexValidator
@@ -74,7 +70,6 @@ class UserManager(BaseUserManager):
         return self.create_user(email, nome, role=admin_role, password=password, **extra_fields)
 
 
-
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
@@ -110,7 +105,6 @@ class User(AbstractUser):
             if original_role != self.role_id:
                 raise ValidationError({"role": "Nao e permitido alterar o cargo do usuario."})
 
-
         if self.email:
             self.email = self.email.strip().lower()
 
@@ -125,11 +119,8 @@ class User(AbstractUser):
         return f"{self.nome} ({self.role.nome if self.role else 'Sem Cargo'})"
 
 
-
-
 class Encarregado(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(role__nome="ENCARREGADO"),
-        related_name="perfil_encarregado")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(role__nome="ENCARREGADO"), related_name="perfil_encarregado")
     foto = models.ImageField(upload_to='fotos_encarregados/', blank=True, null=True)
     telefone = PhoneNumberField(region="MZ")
     nrBI = models.CharField(
@@ -226,11 +217,6 @@ class Motorista(models.Model):
     """Perfil do motorista, ligado ao User"""
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(role__nome="MOTORISTA"), related_name="perfil_motorista")
-        # encarregado = models.ForeignKey(
-        #     "core.Encarregado",
-        #     on_delete=models.CASCADE,
-        #     related_name='alunos',
-        # )
     foto = models.ImageField(upload_to='fotos_motoristas/', blank=True, null=True)
     data_nascimento = models.DateField()
     nrBI = models.CharField(

@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from core.models import User, Cargo, Aluno, Encarregado, Motorista
 
+
 @pytest.mark.django_db
 class TestCargoModel:
 
@@ -35,7 +36,6 @@ class TestCargoModel:
         cargo2 = Cargo(nome="Motorista", salario_padrao=Decimal("2000.00"))
         with pytest.raises(ValidationError):
             cargo2.full_clean()
-
 
 
 @pytest.mark.django_db
