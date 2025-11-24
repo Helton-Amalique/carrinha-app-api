@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class CoreConfig(AppConfig):
+class FinanceiroConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'core'
+    name = 'financeiro'
 
     def ready(self):
-        import core.signals
+        import financeiro.signals

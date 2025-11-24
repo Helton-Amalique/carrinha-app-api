@@ -25,19 +25,25 @@ SECRET_KEY = 'django-insecure-+55ntzz=^8m^2=rw8ogu+ge1_u6s(bts&1-fqp3^w1+g)-dc)e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]  # para dev
+# ou ["localhost", "127.0.0.1", "meu-dominio.com"] em produção
+
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'transporte',
+    'financeiro',
+    'django.contrib.admin'
 ]
 
 MIDDLEWARE = [
@@ -127,3 +133,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# # para a questao dos usuarios
+AUTH_USER_MODEL = "core.User"
