@@ -6,3 +6,4 @@ phonenumbers
 pillow
 drf-spectacular>=0.15.1,<0.16
 drf-nested-routers>=0.93.4
+pytest

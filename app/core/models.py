@@ -210,7 +210,10 @@ class Aluno(models.Model):
         )
 
     def __str__(self):
-        return self.user.nome
+        return f"Aluno: {self.user.nome}"
+
+    # def __str__(self):
+    #     return self.user.nome
 
 
 class Motorista(models.Model):
@@ -246,7 +249,7 @@ class Motorista(models.Model):
         if idade < 18:
             raise ValidationError({"data_nascimento": "O motorista deve ter pelo menos 18 anos."})
 
-        def __str__(self):
+    def __str__(self):
             return f"Motorista: {self.user.nome}"
 
     def save(self, *args, **kwargs):

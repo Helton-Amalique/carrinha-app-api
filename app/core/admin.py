@@ -32,18 +32,10 @@ class UserAdmin(BaseUserAdmin):
     search_help_text = "Pesquise por email ou nome"
 
 
-@admin.register(Encarregado)
-class EncarregadoAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "get_email", "telefone", "nrBI", "ativo")
-    search_fields = ("user__nome", "user__email", "nrBI", "telefone")
-    list_filter = ("ativo",)
-    ordering = ("user__nome",)
-    list_select_related = ("user",)
-
-    def get_email(self, obj):
-        return obj.user.email if obj.user else "-"
-    get_email.short_description = "Email"
-    get_email.admin_order_field = "user__email"
+class AlunoInline(admin.TabularInline):
+    model= Aluno
+    extra = 1
+    list_display = ("id", "user", "get_email", "encarregado", "escola_dest", "classe", "mensalidade", "ativo")
 
 
 @admin.register(Aluno)
@@ -51,6 +43,7 @@ class AlunoAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "get_email", "encarregado", "escola_dest", "classe", "mensalidade", "ativo")
     search_fields = ("user__nome", "user__email", "escola_dest", "classe", "nrBI")
     list_filter = ("ativo", "classe", "escola_dest")
+
     ordering = ("user__nome",)
     list_select_related = ("user", "encarregado")
 
@@ -58,6 +51,22 @@ class AlunoAdmin(admin.ModelAdmin):
         return obj.user.email if obj.user else "-"
     get_email.short_description = "Email"
     get_email.admin_order_field = "user__email"
+
+
+@admin.register(Encarregado)
+class EncarregadoAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "get_email", "telefone", "nrBI", "ativo")
+    search_fields = ("user__nome", "user__email", "nrBI", "telefone")
+    list_filter = ("ativo",)
+    ordering = ("user__nome",)
+    inlines = [AlunoInline]
+    list_select_related = ("user",)
+
+    def get_email(self, obj):
+        return obj.user.email if obj.user else "-"
+    get_email.short_description = "Email"
+    get_email.admin_order_field = "user__email"
+
 
 
 @admin.register(Motorista)
