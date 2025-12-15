@@ -4,20 +4,24 @@ from django.core.exceptions import ObjectDoesNotExist
 
 def is_admin(user):
     """Helper para verificar se o usuário é admin/superuser"""
+    if not user or not user.is_authenticated:
+        return False
     return (
-        user.is_staff or user.is_superuser or (user.role and user.role.nome.upper() == "ADMIN")
+        user.is_staff or user.is_superuser or (user.role == "ADMIN")
     )
 
 
 class IsAdmin(permissions.BasePermission):
     """Permite acesso apenas a usuários com cargo ADMIN ou superuser"""
     def has_permission(self, request, view):
-        user = request.user
-        return bool(user and user.is_authenticated and is_admin(user))
+        return is_admin(request.user)
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """Permite leitura pública, mas escrita apenas para o dono ou admin"""
+class IsOwnerOrAdmin(permissions.BasePermission):
+    """
+    Permite acesso apenas ao dono do objeto ou administradores.
+    NÃO permite leitura pública (proteção de PII).
+    """
     def has_object_permission(self, request, view, obj):
         user = request.user
         if not user.is_authenticated:
@@ -26,14 +30,11 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if is_admin(user):
             return True
 
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        # Se o objeto tiver relação com user
+        # Se o objeto tiver relação direta com user
         if hasattr(obj, "user") and obj.user == user:
             return True
 
-        # Se for aluno vinculado a encarregado
+        # Se for aluno vinculado a encarregado (Encarregado pode ver/editar seus alunos)
         try:
             if hasattr(obj, "encarregado") and obj.encarregado.user == user:
                 return True

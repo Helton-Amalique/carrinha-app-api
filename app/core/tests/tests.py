@@ -1,63 +1,29 @@
 import pytest
 from decimal import Decimal
+from datetime import date, timedelta
 from django.core.exceptions import ValidationError
-from core.models import User, Cargo, Aluno, Encarregado, Motorista
+from core.models import User, Aluno, Encarregado, Motorista
 
 
 @pytest.mark.django_db
-class TestCargoModel:
+class TestUserValidation:
 
-    def test_cargo_valido(self):
-        cargo = Cargo(nome="Motorista", salario_padrao=Decimal("5000.00"))
-        cargo.full_clean()  # não deve levantar erro
-        cargo.save()
-        assert Cargo.objects.count() == 1
-
-    def test_salario_negativo_invalido(self):
-        cargo = Cargo(nome="Motorista", salario_padrao=Decimal("-100.00"))
-        with pytest.raises(ValidationError) as excinfo:
-            cargo.full_clean()
-        assert "salario_padrao" in excinfo.value.message_dict
-
-    def test_nome_vazio_invalido(self):
-        cargo = Cargo(nome="   ", salario_padrao=Decimal("1000.00"))
-        with pytest.raises(ValidationError) as excinfo:
-            cargo.full_clean()
-        assert "nome" in excinfo.value.message_dict
-
-    def test_salario_none_invalido(self):
-        cargo = Cargo(nome="Motorista", salario_padrao=None)
-        with pytest.raises(ValidationError) as excinfo:
-            cargo.full_clean()
-        assert "salario_padrao" in excinfo.value.message_dict
-
-    def test_nome_unico(self):
-        Cargo.objects.create(nome="Motorista", salario_padrao=Decimal("1000.00"))
-        cargo2 = Cargo(nome="Motorista", salario_padrao=Decimal("2000.00"))
-        with pytest.raises(ValidationError):
-            cargo2.full_clean()
+    def test_user_admin_creation(self):
+        user = User.objects.create_superuser(email="admin@test.com", nome="Admin User", password="password")
+        assert user.role == "ADMIN"
+        assert user.is_staff
+        assert user.is_superuser
 
 
 @pytest.mark.django_db
 class TestAlunoEMotoristaValidacoes:
 
     @pytest.fixture
-    def cargos(self):
-        cargo_aluno = Cargo.objects.create(nome="ALUNO", salario_padrao=Decimal("0.00"))
-        cargo_encarregado = Cargo.objects.create(nome="ENCARREGADO", salario_padrao=Decimal("0.00"))
-        cargo_motorista = Cargo.objects.create(nome="MOTORISTA", salario_padrao=Decimal("0.00"))
-        return {
-            "aluno": cargo_aluno,
-            "encarregado": cargo_encarregado,
-            "motorista": cargo_motorista,
-        }
-
-    @pytest.fixture
-    def encarregado(self, cargos):
+    def encarregado(self):
         user_enc = User.objects.create(
             email="encarregado@dominio.com",
             nome="Maria Encarregada",
-            role=cargos["encarregado"],
+            role="ENCARREGADO",
             salario=Decimal("0.00"),
         )
         return Encarregado.objects.create(
@@ -69,13 +35,13 @@ class TestAlunoEMotoristaValidacoes:
 
     # ----- Aluno -----
 
-    def test_aluno_valido(self, cargos, encarregado):
+    def test_aluno_valido(self, encarregado):
         # 10 anos atrás
         nascimento = date.today().replace(year=date.today().year - 10)
         user_aluno = User.objects.create(
             email="aluno@dominio.com",
             nome="joao aluno",
-            role=cargos["aluno"],
+            role="ALUNO",
             salario=Decimal("0.00"),
         )
         aluno = Aluno(
@@ -94,12 +60,12 @@ class TestAlunoEMotoristaValidacoes:
         assert aluno.user.nome == "Joao Aluno"
         assert aluno.user.email == "aluno@dominio.com"
 
-    def test_aluno_data_nascimento_futura_invalida(self, cargos, encarregado):
+    def test_aluno_data_nascimento_futura_invalida(self, encarregado):
         futuro = date.today() + timedelta(days=1)
         user_aluno = User.objects.create(
             email="aluno2@dominio.com",
             nome="Ana Aluna",
-            role=cargos["aluno"],
+            role="ALUNO",
         )
         aluno = Aluno(
             user=user_aluno,
@@ -113,13 +79,13 @@ class TestAlunoEMotoristaValidacoes:
             aluno.full_clean()
         assert "data_nascimento" in excinfo.value.message_dict
 
-    def test_aluno_idade_menor_que_3_invalida(self, cargos, encarregado):
+    def test_aluno_idade_menor_que_3_invalida(self, encarregado):
         # 2 anos atrás
         nascimento = date.today().replace(year=date.today().year - 2)
         user_aluno = User.objects.create(
             email="aluno3@dominio.com",
             nome="Bebe",
-            role=cargos["aluno"],
+            role="ALUNO",
         )
         aluno = Aluno(
             user=user_aluno,
@@ -135,12 +101,12 @@ class TestAlunoEMotoristaValidacoes:
 
     # ----- Motorista -----
 
-    def test_motorista_valido_maior_de_18(self, cargos):
+    def test_motorista_valido_maior_de_18(self):
         nascimento = date.today().replace(year=date.today().year - 30)
         user_motorista = User.objects.create(
             email="motorista@dominio.com",
             nome="Carlos Motorista",
-            role=cargos["motorista"],
+            role="MOTORISTA",
         )
         motorista = Motorista(
             user=user_motorista,
@@ -154,13 +120,13 @@ class TestAlunoEMotoristaValidacoes:
         motorista.save()
         assert motorista.pk is not None
 
-    def test_motorista_menor_de_18_invalido(self, cargos):
+    def test_motorista_menor_de_18_invalido(self):
         # 16 anos atrás
         nascimento = date.today().replace(year=date.today().year - 16)
         user_motorista = User.objects.create(
             email="motorista2@dominio.com",
             nome="Jovem",
-            role=cargos["motorista"],
+            role="MOTORISTA",
         )
         motorista = Motorista(
             user=user_motorista,

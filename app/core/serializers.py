@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from core.models import User, Cargo, Aluno, Encarregado, Motorista
-
-
-class CargoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cargo
-        fields = ["id", "nome", "salario_padrao"]
+from core.models import User, Aluno, Encarregado, Motorista
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -30,8 +24,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password", None)
+        
+        # Validar role para garantir que apenas Admin pode criar outros Admins
+        role = validated_data.get('role', 'ALUNO') # Default to ALUNO if not provided
+        request = self.context.get('request')
+        if role == 'ADMIN':
+            if not request or not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser or request.user.role == 'ADMIN'):
+                 # Em vez de erro, forçamos um role seguro ou lançamos erro?
+                 # Lançar erro é mais seguro para não criar admin sem querer.
+                 raise serializers.ValidationError({"role": "Apenas administradores podem criar usuários ADMIN."})
+
         # Usa o manager para garantir regras de negócio
-        user = User.objects.create(**validated_data)
+        user = User.objects.create_user(**validated_data)
         if password:
             user.set_password(password)
             user.save()
@@ -39,6 +43,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)
+        
+        # Validar alteração de role
+        if 'role' in validated_data:
+            new_role = validated_data['role']
+            request = self.context.get('request')
+            if new_role == 'ADMIN':
+                 if not request or not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser or request.user.role == 'ADMIN'):
+                     raise serializers.ValidationError({"role": "Apenas administradores podem promover usuários a ADMIN."})
+        
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
@@ -72,6 +85,8 @@ class EncarregadoSerializer(serializers.ModelSerializer):
 
 class AlunoSerializer(serializers.ModelSerializer):
     idade = serializers.IntegerField(read_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    encarregado = serializers.PrimaryKeyRelatedField(queryset=Encarregado.objects.all())
 
     class Meta:
         model = Aluno
@@ -81,16 +96,18 @@ class AlunoSerializer(serializers.ModelSerializer):
             "foto",
             "idade",
             "data_nascimento",
+            "nrBI",
             "escola_dest",
             "classe",
             "mensalidade",
             "ativo",
             "encarregado",
         )
-        read_only_fields = ("encarregado",)
 
 
 class MotoristaSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
     class Meta:
         model = Motorista
         fields = (

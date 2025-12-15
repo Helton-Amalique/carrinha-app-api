@@ -1,8 +1,0 @@
-[flake8]
-ignore = E502, E131, F401, E501, E722, F841, F821
-
-exclude =
-    migrations,
-    __pycache__,
-    manage.py,
-    settings.py
