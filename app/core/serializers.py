@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password", None)
-        
+
         # Validar role para garantir que apenas Admin pode criar outros Admins
         role = validated_data.get('role', 'ALUNO') # Default to ALUNO if not provided
         request = self.context.get('request')
@@ -43,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)
-        
+
         # Validar alteração de role
         if 'role' in validated_data:
             new_role = validated_data['role']
@@ -51,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
             if new_role == 'ADMIN':
                  if not request or not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser or request.user.role == 'ADMIN'):
                      raise serializers.ValidationError({"role": "Apenas administradores podem promover usuários a ADMIN."})
-        
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
@@ -90,6 +90,7 @@ class AlunoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Aluno
+        ref_name = "TransporteAluno"
         fields = (
             "id",
             "user",
@@ -110,6 +111,7 @@ class MotoristaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Motorista
+        ref_name = "TransporteMotorista"
         fields = (
             "id",
             "user",

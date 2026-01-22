@@ -8,7 +8,7 @@ class AlunoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Aluno
-        fields = ['id', 'user_nome', 'escola_dest', 'classe', 'ativo']
+        fields = ['id', 'user_nome', 'escola_dest', 'classe', 'email', 'ativo']
 
 
 class MotoristaSerializer(serializers.ModelSerializer):
@@ -66,7 +66,7 @@ class RotaSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'nome', 'descricao', 'veiculo_id',
             'veiculo_detalhes', 'motorista_detalhes', 'total_alunos',
-            'hora_partida', 'hora_chegada', 'ativo', 'criado_em', 'atualizado_em'
+            'hora_partida', 'hora_chegada', 'ativo', 'criado_em', 'atualizado_em', 'alunos'
         ]
         read_only_fields = ['criado_em', 'atualizado_em']
 

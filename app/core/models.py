@@ -117,7 +117,6 @@ class Encarregado(models.Model):
 
 class Aluno(models.Model):
     """Perfil vinculado a um usuário com role=Aluno"""
-
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

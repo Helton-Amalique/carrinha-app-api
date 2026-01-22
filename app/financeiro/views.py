@@ -2,7 +2,7 @@
 from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, decorators
 from rest_framework.response import Response
-from financeiro.tasks import enviar_alerta_email
+# from financeiro.tasks import enviar_alerta_email
 from financeiro.models import Mensalidade, Pagamento, Salario, Fatura, AlertaEnviado
 from financeiro.serializers import (
     MensalidadeSerializer,

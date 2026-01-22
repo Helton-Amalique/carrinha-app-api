@@ -26,21 +26,17 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         user = request.user
         if not user.is_authenticated:
             return False
-
         if is_admin(user):
             return True
-
         # Se o objeto tiver relação direta com user
         if hasattr(obj, "user") and obj.user == user:
             return True
-
         # Se for aluno vinculado a encarregado (Encarregado pode ver/editar seus alunos)
         try:
             if hasattr(obj, "encarregado") and obj.encarregado.user == user:
                 return True
         except ObjectDoesNotExist:
             pass
-
         return False
 
 
@@ -50,13 +46,10 @@ class IsEncarregadoOwner(permissions.BasePermission):
         user = request.user
         if not user.is_authenticated:
             return False
-
         if is_admin(user):
             return True
-
         if hasattr(obj, "encarregado") and obj.encarregado.user == user:
             return True
-
         return False
 
 
@@ -66,13 +59,10 @@ class IsAlunoOwner(permissions.BasePermission):
         user = request.user
         if not user.is_authenticated:
             return False
-
         if is_admin(user):
             return True
-
         if hasattr(obj, "user") and obj.user == user:
             return True
-
         return False
 
 
@@ -82,11 +72,8 @@ class IsMotoristaOwner(permissions.BasePermission):
         user = request.user
         if not user.is_authenticated:
             return False
-
         if is_admin(user):
             return True
-
         if hasattr(obj, "user") and obj.user == user:
             return True
-
         return False
